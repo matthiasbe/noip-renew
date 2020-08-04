@@ -32,7 +32,7 @@ class Logger:
         self.time_string_formatter = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime(time.time()))
         self.level = self.level if level is None else level
         if self.level > 0:
-            print(f"[{self.time_string_formatter}] - {msg}")
+            print("[" + self.time_string_formatter + "] - " + msg)
 
 
 class Robot:
@@ -56,7 +56,7 @@ class Robot:
         options.add_argument("headless")
         options.add_argument("no-sandbox")  # need when run in docker
         options.add_argument("window-size=1200x800")
-        options.add_argument(f"user-agent={Robot.USER_AGENT}")
+        options.add_argument("user-agent=" + Robot.USER_AGENT)
         if 'https_proxy' in os.environ:
             options.add_argument("proxy-server=" + os.environ['https_proxy'])
         browser = webdriver.Chrome(options=options)
@@ -64,7 +64,7 @@ class Robot:
         return browser
 
     def login(self):
-        self.logger.log(f"Opening {Robot.LOGIN_URL}...")
+        self.logger.log("Opening " + Robot.LOGIN_URL + "...")
         self.browser.get(Robot.LOGIN_URL)
         if self.debug > 1:
             self.browser.save_screenshot("debug1.png")
@@ -94,13 +94,13 @@ class Robot:
             host_name = host_link.text
             expiration_days = self.get_host_expiration_days(host, iteration)
             next_renewal.append(expiration_days)
-            self.logger.log(f"{host_name} expires in {str(expiration_days)} days")
+            self.logger.log(host_name +" expires in " + str(expiration_days) + " days")
             if expiration_days < 7:
                 self.update_host(host_button, host_name)
                 count += 1
             iteration += 1
         self.browser.save_screenshot("results.png")
-        self.logger.log(f"Confirmed hosts: {count}", 2)
+        self.logger.log("Confirmed hosts: " + str(count), 2)
         nr = min(next_renewal) - 6
         today = date.today() + timedelta(days=nr)
         day = str(today.day)
@@ -109,15 +109,15 @@ class Robot:
         return True
 
     def open_hosts_page(self):
-        self.logger.log(f"Opening {Robot.HOST_URL}...")
+        self.logger.log("Opening " + Robot.HOST_URL + "...")
         try:
             self.browser.get(Robot.HOST_URL)
         except TimeoutException as e:
             self.browser.save_screenshot("timeout.png")
-            self.logger.log(f"Timeout: {str(e)}")
+            self.logger.log("Timeout: " + str(e))
 
     def update_host(self, host_button, host_name):
-        self.logger.log(f"Updating {host_name}")
+        self.logger.log("Updating " + host_name)
         host_button.click()
         time.sleep(3)
         intervention = False
@@ -130,7 +130,7 @@ class Robot:
         if intervention:
             raise Exception("Manual intervention required. Upgrade text detected.")
 
-        self.browser.save_screenshot(f"{host_name}_success.png")
+        self.browser.save_screenshot(host_name + "_success.png")
 
     @staticmethod
     def get_host_expiration_days(host, iteration):
@@ -161,7 +161,7 @@ class Robot:
 
     def run(self):
         rc = 0
-        self.logger.log(f"Debug level: {self.debug}")
+        self.logger.log("Debug level: " + str(self.debug))
         try:
             self.login()
             if not self.update_hosts():
@@ -185,7 +185,7 @@ def get_args_values(argv):
     if argv is None:
         argv = sys.argv
     if len(argv) < 3:
-        print(f"Usage: {argv[0]} <noip_username> <noip_password> [<debug-level>] ")
+        print("Usage: " + argv[0] + " <noip_username> <noip_password> [<debug-level>] ")
         sys.exit(1)
 
     noip_username = argv[1]
